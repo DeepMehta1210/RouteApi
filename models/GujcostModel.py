@@ -1,5 +1,20 @@
 from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
 
+class WLSU(BaseModel):
+    WLSU_ID: Optional[str] = None
+    AQI: Optional[int] = None
+    CLUSTER_ID: Optional[str | int] = None
+    ISD: Optional[int] = None
+    L1N1: Optional[list[int]] = None
+    SQI: Optional[int] = None
+    STATUS: Optional[bool] = None
+    TIMESTAMP: Optional[datetime] = None
+    VL: Optional[int] = None
+    WLL: Optional[int] = None
+    WLSU_NAME: Optional[str] = None
+    
 class Zone(BaseModel):
     zone_id:str
     zone_name:str
@@ -27,17 +42,8 @@ class Cluster(BaseModel):
     cedetive_id:str
     timestamp:str
     status:str
-class WLSU(BaseModel):
-    wlsu_id:str
-    wlsu_name:str
-    l1n1:str  
-    cedetive_id:str
-    wll:str
-    sqi:str
-    aqi:str
-    vl:str
-    timestamp:str
-    status:str
+
+
 
 class Cedative(BaseModel):
     cedative_id:str
