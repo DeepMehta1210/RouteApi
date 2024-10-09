@@ -1,18 +1,23 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional,List
 from datetime import datetime
 
-class WLSU(BaseModel):
-    WLSU_ID: Optional[str] = None
+class IndexHistory(BaseModel):
     AQI: Optional[int] = None
-    CLUSTER_ID: Optional[str | int] = None
     ISD: Optional[int] = None
-    L1N1: Optional[list[int]] = None
     SQI: Optional[int] = None
-    STATUS: Optional[bool] = None
-    TIMESTAMP: Optional[datetime] = None
+    timestamp: Optional[datetime] = None
     VL: Optional[int] = None
     WLL: Optional[int] = None
+
+# Main WLSU model
+class WLSU(BaseModel):
+    WLSU_ID: Optional[str] = None
+    CLUSTER_ID: Optional[int] = None
+    data_history: Optional[List[IndexHistory]] = None
+    L1N1: Optional[List[int]] = None
+    STATUS: Optional[bool] = None
+    TIMESTAMP: Optional[datetime] = None
     WLSU_NAME: Optional[str] = None
     
 class Zone(BaseModel):

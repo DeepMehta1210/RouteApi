@@ -1,4 +1,4 @@
-from fastapi import APIRouter,FastAPI,Request,HTTPException
+from fastapi import APIRouter,FastAPI,Request,HTTPException,Body
 from fastapi.responses import JSONResponse
 from config.db import get_dynamodb_resource
 from fastapi.templating import Jinja2Templates
@@ -6,7 +6,7 @@ from models.GujcostModel import Zone,Area,WLSU,Cedative,Cluster
 from typing import List
 import datetime
 from botocore.exceptions import ClientError
-
+import json
 AwsAPIRouter=APIRouter()
 db=get_dynamodb_resource()
 clusters_db = []
@@ -14,6 +14,43 @@ zones_db = []
 areas_db = []
 cedatives_db = []
 
+
+# @AwsAPIRouter.post("/wlsu/", response_model=WLSU)
+# async def create_wlsu(wlsu: WLSU):
+#     """
+#     Create a new WLSU in the database.
+
+#     Args:
+#         wlsu (WLSU): The WLSU to be created.
+
+#     Returns:
+#         dict: A dictionary with a message indicating success or failure.
+
+#     Raises:
+#         HTTPException: A 400 or 500 error if the request fails.
+#     """    
+#     try:
+#         item = {
+#             'WLSU_ID': wlsu.WLSU_ID,
+#             'AQI': wlsu.AQI,
+#             'CLUSTER_ID': wlsu.CLUSTER_ID,
+#             'ISD': wlsu.ISD,
+#             'L1N1': list(wlsu.L1N1),
+#             'SQI': wlsu.SQI,
+#             'STATUS': bool(wlsu.STATUS),
+#             'TIMESTAMP': wlsu.TIMESTAMP.isoformat() if wlsu.TIMESTAMP else None,
+#             'VL': wlsu.VL,
+#             'WLL': wlsu.WLL,
+#             'WLSU_NAME': wlsu.WLSU_NAME
+#         }
+#         db = get_dynamodb_resource()
+#         wlsus_table = db.Table("WLSU")
+#         result = wlsus_table.put_item(Item=item)
+#         return {"message": "Inserted Successfully"}
+#     except ClientError as e:
+#         raise HTTPException(status_code=400, detail=e.response['Error']['Message'])
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 @AwsAPIRouter.post("/wlsu/", response_model=WLSU)
 async def create_wlsu(wlsu: WLSU):
@@ -28,29 +65,47 @@ async def create_wlsu(wlsu: WLSU):
 
     Raises:
         HTTPException: A 400 or 500 error if the request fails.
-    """    
+    """
     try:
+        # Convert `data_history` to the appropriate format for DynamoDB
+        data_history = [
+            {
+                'timestamp': index.timestamp.isoformat() if index.timestamp else None,
+                'AQI': str(index.AQI) if index.AQI is not None else None,
+                'ISD': str(index.ISD) if index.ISD is not None else None,
+                'SQI': str(index.SQI) if index.SQI is not None else None,
+                'VL': str(index.VL) if index.VL is not None else None,
+                'WLL': str(index.WLL) if index.WLL is not None else None
+            }
+            for index in wlsu.data_history
+        ] if wlsu.data_history else []
+
+        # Prepare the item to be inserted
         item = {
-            'WLSU_ID': wlsu.WLSU_ID,
-            'AQI': wlsu.AQI,
-            'CLUSTER_ID': wlsu.CLUSTER_ID,
-            'ISD': wlsu.ISD,
-            'L1N1': list(wlsu.L1N1),
-            'SQI': wlsu.SQI,
-            'STATUS': bool(wlsu.STATUS),
-            'TIMESTAMP': wlsu.TIMESTAMP.isoformat() if wlsu.TIMESTAMP else None,
-            'VL': wlsu.VL,
-            'WLL': wlsu.WLL,
-            'WLSU_NAME': wlsu.WLSU_NAME
+            'WLSU_ID': {'S': wlsu.WLSU_ID},
+            'CLUSTER_ID': {'N': str(wlsu.CLUSTER_ID)} if wlsu.CLUSTER_ID is not None else None,
+            'data_history': {'L': [{'M': dh} for dh in data_history]},
+            'L1N1': {'L': [{'N': str(n)} for n in wlsu.L1N1]} if wlsu.L1N1 else [],
+            'STATUS': {'BOOL': bool(wlsu.STATUS)},
+            'TIMESTAMP': {'S': wlsu.TIMESTAMP.isoformat()} if wlsu.TIMESTAMP else None,
+            'WLSU_NAME': {'S': wlsu.WLSU_NAME}
         }
+
+        # Remove keys with None values (optional, but makes the DynamoDB record cleaner)
+        item = {k: v for k, v in item.items() if v is not None}
+
+        # Get DynamoDB resource and insert the item
         db = get_dynamodb_resource()
         wlsus_table = db.Table("WLSU")
         result = wlsus_table.put_item(Item=item)
+
         return {"message": "Inserted Successfully"}
+
     except ClientError as e:
         raise HTTPException(status_code=400, detail=e.response['Error']['Message'])
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 # # Get all WLSUs
 @AwsAPIRouter.get("/wlsus/", response_model=List[WLSU])
 async def get_wlsus():
@@ -254,3 +309,20 @@ async def delete_area(area_id: str):
             del areas_db[i]
             return {"detail": "Area deleted"}
     raise HTTPException(status_code=404, detail="Area not found")
+
+
+@AwsAPIRouter.get("/RouteData")
+async def find_route_data(route_data: dict = Body(...)):
+    turning_points = [(float(point['latitude']), float(point['longitude'])) for point in route_data['turning_points']]
+    wlsus_list=list(get_wlsus())
+    data={}
+    for i in range(0,len(turning_points)-1):
+        loc1=turning_points[0]
+        loc2=turning_points[1]
+        for wlsu in wlsus_list:
+            wlsu_cordinates=wlsu.get("L1N1")
+            if (loc1[0]<=wlsu_cordinates[0]<=loc2[0])and(loc1[1]<=wlsu_cordinates[1]<=loc2[1]):
+                data[i]=list(wlsu.get("data_hisory"))[0]
+    return data
+
+ 
