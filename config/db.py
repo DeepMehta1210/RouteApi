@@ -2,16 +2,16 @@ import boto3
 def get_dynamodb_client(region_name='ap-south-1'):
     return boto3.client(
         'dynamodb',
-        aws_access_key_id="access key",
-        aws_secret_access_key="access key",
+        aws_access_key_id="AKIA5YYIAOKHLUZIZC4G",
+        aws_secret_access_key="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",
         region_name=region_name
     )
 
 def get_dynamodb_resource(region_name='ap-south-1'):
     return boto3.resource(
         'dynamodb',
-        aws_access_key_id="access key",
-        aws_secret_access_key="access key",
+        aws_access_key_id="AKIA5YYIAOKHLUZIZC4G",
+        aws_secret_access_key="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",
         region_name=region_name
     )
 
@@ -33,3 +33,6 @@ def test_dynamodb_connection():
     except Exception as e:
         print(f"Error connecting to DynamoDB: {e}")
         return False
+    
+if __name__ == "__main__":
+    test_dynamodb_connection()

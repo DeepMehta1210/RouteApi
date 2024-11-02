@@ -1,60 +1,64 @@
 from pydantic import BaseModel
-from typing import Optional,List
 from datetime import datetime
+from typing import Optional, List, Dict
 
-class IndexHistory(BaseModel):
+class DataHistoryItem(BaseModel):
+    timestamp: Optional[datetime] = None
     AQI: Optional[int] = None
     ISD: Optional[int] = None
     SQI: Optional[int] = None
-    timestamp: Optional[datetime] = None
     VL: Optional[int] = None
     WLL: Optional[int] = None
 
-# Main WLSU model
 class WLSU(BaseModel):
     WLSU_ID: Optional[str] = None
-    CLUSTER_ID: Optional[int] = None
-    data_history: Optional[List[IndexHistory]] = None
-    L1N1: Optional[List[int]] = None
+    CLUSTER_ID: Optional[str | int] = None
+    L1N1: Optional[list[str]] = None
     STATUS: Optional[bool] = None
     TIMESTAMP: Optional[datetime] = None
     WLSU_NAME: Optional[str] = None
+    data_history: Optional[List[DataHistoryItem]] = None
+
     
 class Zone(BaseModel):
-    zone_id:str
-    zone_name:str
-    city_id:str
-    l1n2:str
-    l2n2:str
-    timestamp:str
-    status:str
+    ZONE_ID : Optional[str] = None
+    ZONE_NAME: Optional[str] = None
+    CITY_ID: Optional[str] = None
+    L1N1: Optional[list[int]] = None
+    L2N2: Optional[list[int]] = None
+    TIMESTAMP: Optional[datetime] = None
+    STATUS: Optional[bool] = None
 
 class Area(BaseModel):
-    area_id:str
-    area_name:str
-    zone_id:str
-    l1n2:str
-    l2n2:str
-    timestamp:str
-    status:str
+    AREA_ID: Optional[str] = None
+    AREA_NAME: Optional[str] = None
+    ZONE_ID: Optional[str] = None
+    L1N1: Optional[list[int]] = None
+    L2N2: Optional[list[int]] = None
+    TIMESTAMP:Optional[datetime] = None
+    STATUS: Optional[bool] = None
 
 class Cluster(BaseModel):
-    cluster_id:str
-    cluster_name:str
-    l1n1:str
-    zone_id:str
-    city_id:str
-    cedetive_id:str
-    timestamp:str
-    status:str
+    CLUASTER_ID: Optional[str] = None
+    AREA_ID: Optional[str] = None
+    CEDATIVE_ID: Optional[str] = None
+    CLUSTER_NAME: Optional[str] = None
+    L1N1 : Optional[list[int]] = None
+    L2N2: Optional[list[int]] = None
+    ZONE_ID: Optional[str] = None
+    CITY_ID: Optional[str] = None
+    CEDATIVE_ID: Optional[str] = None
+    TIMESTAMP:Optional[datetime] = None
+    STATUS: Optional[bool] = None
 
 
 
 class Cedative(BaseModel):
-    cedative_id:str
-    bl1n1:str  
-    bcedativeid:str
-    wlsu_id:str
-    cluster_id:str
-    timestamp:str
-    status:str
+    CEDATIVE_ID: Optional[str] = None
+    BACKUP_CEDATIVE_ID: Optional[str] = None
+    L1N2: Optional[list[int]] = None
+    BL1N2: Optional[list[int]] = None
+    WLSU_ID: Optional[list[int]] = None
+    CLUSTER_ID: Optional[str] = None
+    TIMESTAMP: Optional[datetime] = None
+    STATUS: Optional[bool] = None
