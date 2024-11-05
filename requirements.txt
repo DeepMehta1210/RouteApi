@@ -2,3 +2,5 @@ fastapi
 uvicorn
 jinja2
 boto3
+mangum
+Pydantic

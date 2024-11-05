@@ -2,16 +2,16 @@ import boto3
 def get_dynamodb_client(region_name='ap-south-1'):
     return boto3.client(
         'dynamodb',
-        aws_access_key_id="AKIA5YYIAOKHLUZIZC4G",
-        aws_secret_access_key="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",
+        aws_access_key_id="key",
+        aws_secret_access_key="key",
         region_name=region_name
     )
 
 def get_dynamodb_resource(region_name='ap-south-1'):
     return boto3.resource(
         'dynamodb',
-        aws_access_key_id="AKIA5YYIAOKHLUZIZC4G",
-        aws_secret_access_key="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",
+        aws_access_key_id="key",
+        aws_secret_access_key="key",
         region_name=region_name
     )
 
